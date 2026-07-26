@@ -1,0 +1,17 @@
+rules_version = '2';
+
+// Security posture (read docs/HANDOFF.md before changing):
+// This is an intentionally low-security, trust-based club tool. Access requires
+// a signed-in session (Anonymous Authentication), which the app performs
+// automatically. That blocks unauthenticated drive-by access and keeps the
+// database out of search results, but anyone with the app's public config could
+// sign in anonymously and read/write. That is an accepted tradeoff for this use
+// case (a shared committee password gates the UI). Do NOT store anything more
+// sensitive than recruitment application text/photos here.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
