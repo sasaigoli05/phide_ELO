@@ -67,12 +67,18 @@
     var headers = rows[0].map(norm);
 
     var col = {
-      name: findCol(headers, function (h) { return h.indexOf('full name') >= 0; }),
+      // Matches "Name (First, Last)" (current form) and "Personal Information - Full Name"
+      // (older template) alike — anything with "name" that isn't the phonetic column.
+      name: findCol(headers, function (h) { return h.indexOf('name') >= 0 && h.indexOf('phonetic') < 0; }),
       phonetic: findCol(headers, function (h) { return h.indexOf('phonetic') >= 0; }),
       majors: findCol(headers, function (h) { return h.indexOf('major') >= 0; }),
       minors: findCol(headers, function (h) { return h.indexOf('minor') >= 0; }),
       year: findCol(headers, function (h) { return h.indexOf('year') >= 0; }),
-      photo: findCol(headers, function (h) { return h.indexOf('picture') >= 0 || h.indexOf('photo') >= 0; })
+      photo: findCol(headers, function (h) { return h.indexOf('picture') >= 0 || h.indexOf('photo') >= 0; }),
+      // The "list your top 1-5 achievements/experiences" free-text question. Matched by
+      // its distinctive opening phrase rather than a fixed column position, since its
+      // exact wording/position can shift between form versions.
+      achievements: findCol(headers, function (h) { return h.indexOf('make your list') >= 0; })
     };
 
     // Essay columns: header begins with "N." (with any leading whitespace).
@@ -99,6 +105,12 @@
           });
         }
       });
+      if (col.achievements >= 0) {
+        essays.push({
+          q: 'Notable achievements & experience (self-ranked list)',
+          a: norm(row[col.achievements])
+        });
+      }
 
       var rawPhoto = col.photo >= 0 ? norm(row[col.photo]) : '';
       candidates.push({
