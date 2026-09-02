@@ -23,11 +23,44 @@ window.Wizard = (function () {
     return (name || '?').split(/\s+/).map(function (w) { return w[0]; }).slice(0, 2).join('').toUpperCase();
   }
 
+  /*
+   * parse.js stores the Drive thumbnail at sz=w600, which is right for the
+   * 120px tile but soft when blown up. Ask Drive for a larger render for the
+   * expanded view; non-Drive URLs are used unchanged.
+   */
+  function bigPhotoUrl(url) {
+    return /drive\.google\.com\/thumbnail/.test(url) ? url.replace(/([?&]sz=)w\d+/, '$1w1600') : url;
+  }
+
+  function openPhoto(ctx, cand) {
+    var h = ctx.h;
+    var big = h('img', { class: 'photo-full', src: bigPhotoUrl(cand.photo), alt: cand.name, referrerpolicy: 'no-referrer' });
+    // If the larger render 404s, fall back to the thumbnail we know loaded.
+    big.addEventListener('error', function () {
+      if (big.src !== cand.photo) big.src = cand.photo;
+    });
+    ctx.openModal(h('div', { class: 'photo-modal' }, [
+      big,
+      h('div', { class: 'photo-modal-bar' }, [
+        h('div', { class: 'photo-modal-name', text: cand.name }),
+        h('button', { class: 'btn secondary small', onclick: ctx.closeModal, text: 'Close' })
+      ])
+    ]));
+  }
+
   function photoNode(cand, ctx) {
     var h = ctx.h;
     if (cand.photo) {
-      var img = h('img', { class: 'photo', src: cand.photo, alt: cand.name, referrerpolicy: 'no-referrer' });
+      var img = h('img', {
+        class: 'photo expandable', src: cand.photo, alt: cand.name, referrerpolicy: 'no-referrer',
+        role: 'button', tabindex: '0', title: 'Click to enlarge'
+      });
+      img.addEventListener('click', function () { openPhoto(ctx, cand); });
+      img.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPhoto(ctx, cand); }
+      });
       img.addEventListener('error', function () {
+        // No usable image — swap in initials, which are not expandable.
         var ph = h('div', { class: 'photo', text: initials(cand.name) });
         if (img.parentNode) img.parentNode.replaceChild(ph, img);
       });
