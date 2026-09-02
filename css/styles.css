@@ -182,9 +182,28 @@ a { color: var(--green-dark); }
 .person.picked { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
 .person-head { padding: 18px 18px 14px; text-align: center; border-bottom: 1px solid var(--line); }
 .person-head .photo {
-  width: 84px; height: 84px; border-radius: 14px; object-fit: cover; background: #eef1f3;
-  margin: 0 auto 10px; display: grid; place-items: center; color: #b3bcc4; font-size: 30px; border: 1px solid var(--line);
+  width: 120px; height: 120px; border-radius: 14px; object-fit: cover; background: #eef1f3;
+  margin: 0 auto 10px; display: grid; place-items: center; color: #b3bcc4; font-size: 42px; border: 1px solid var(--line);
 }
+/* click-to-enlarge affordance (only on real photos, never the initials tile) */
+.person-head .photo.expandable { cursor: zoom-in; transition: transform .12s, box-shadow .12s, border-color .12s; }
+.person-head .photo.expandable:hover { transform: scale(1.03); box-shadow: var(--shadow-lg); border-color: #cfd6db; }
+.person-head .photo.expandable:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+
+/* expanded photo (uses the app's existing .modal-backdrop) */
+.photo-modal { display: flex; flex-direction: column; gap: 12px; align-items: center; max-width: min(92vw, 720px); }
+.photo-full {
+  max-width: 100%; max-height: 78vh; width: auto; height: auto; display: block;
+  border-radius: var(--radius); box-shadow: var(--shadow-lg); background: #fff;
+}
+.photo-modal-bar { display: flex; align-items: center; gap: 14px; }
+.photo-modal-name { color: #fff; font-weight: 700; font-size: 16px; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+
+@media (max-height: 720px) {
+  .person-head { padding: 12px 18px 10px; }
+  .person-head .photo { width: 92px; height: 92px; font-size: 34px; margin-bottom: 8px; }
+}
+
 .person-head .pname { font-size: 19px; font-weight: 700; }
 .person-head .pmeta { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
 .person-head .phon { font-size: 12px; color: #93a0aa; font-style: italic; }
